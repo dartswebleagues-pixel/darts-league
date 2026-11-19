@@ -57,7 +57,7 @@ td small{opacity:.7;font-size:11px}
 .bar{position:sticky;bottom:0;z-index:5;padding:16px 0 8px;background:linear-gradient(transparent,var(--bg) 35%)}
 @media (max-width:820px){nav,.pills{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}nav button,.pills button{flex:none}nav button{padding:6px 7px;font-size:14px;letter-spacing:0}}
 
-@media (orientation:portrait) and (max-width:820px){.lt{min-width:0}.lt :is(th,td):is(:nth-child(6),:nth-child(7),:nth-child(8),:nth-child(11),:nth-child(12),:nth-child(13)){display:none}.lt th,.lt td{padding:6px 3px;font-size:17px}.lt td:nth-child(2),.lt th:nth-child(2){white-space:normal;padding-left:6px}.pt{display:inline}nav{gap:5px}nav button{padding:6px 8px;font-size:15px;letter-spacing:0}}.lg td:nth-child(2),.lg th:nth-child(2){text-align:left}
+@media (max-width:600px){.lt{min-width:0}.lt :is(th,td):is(:nth-child(6),:nth-child(7),:nth-child(8),:nth-child(11),:nth-child(12),:nth-child(13)){display:none}.lt th,.lt td{padding:6px 3px;font-size:17px}.lt td:nth-child(2),.lt th:nth-child(2){white-space:normal;padding-left:6px}.pt{display:inline}nav{gap:5px}nav button{padding:6px 8px;font-size:15px;letter-spacing:0}}.lg td:nth-child(2),.lg th:nth-child(2){text-align:left}
 </style></head><body><div class="wrap" id="app"></div>
 <script src="config.js"></script>
 <script>
@@ -114,13 +114,13 @@ function vFx(){const k=U.k,d=S.D[k],ws=weeks(k);
  const w=U.w=pick(ws);
  const rows=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const[,m,h,a,pp,note]=f,aw=[h,a].map(i=>[d.n[i],dayTxt(S.days[k+':'+i]||[],w)]).filter(x=>x[1]).map(x=>x[0]+' ('+x[1]+')');
   const rp=n=>S.log.find(l=>l.type=='Replace'&&l.div==k&&l.w==w&&l.neu==n),rh=rp(d.n[h]),ra=rp(d.n[a]),rn=l=>l?E(l.neu+' replaces '+l.old):'';return`<div class="fx">${pb(k,h,rh?'rp':'')}<i>${pp?'P:P':'vs'}</i>${pb(k,a,ra?'rp':'')}</div>${rh||ra?`<div class="fx rn"><div>${rn(rh)}</div><span></span><div>${rn(ra)}</div></div>`:''}${note?`<div class="nt">🌴 ${E(note)}</div>`:''}${aw.length?`<div class="nt">🌴 Away: ${E(aw.join(', '))}</div>`:''}`}).join('');
- return divPills(wkPills(ws,k))+head(k)+`<div class="sub">Season 9 - Week ${w} - Fixtures</div><div class="dl">${dl(w)}</div>${rows}<div class="foot">POST YOUR RESULTS IN THE DISCORD RESULTS AREA</div>`+(rel(k,w)?'':`<div class="warn">Week ${w} is not yet released to players (admin preview).</div>`)}
+ return divPills(wkPills(ws,k))+head(k)+`<div class="dl">${dl(w)}</div>${rows}`+(rel(k,w)?'':`<div class="warn">Week ${w} is not yet released to players (admin preview).</div>`)}
 
 function vTb(){const k=U.k,d=S.D[k],T=tbl(k),lw=Math.max(0,...d.res.map(r=>r[0])),red=k=='Prem'?4:2;let prev=null,pos=0;
  const rows=T.map((t,i)=>{const key=[t.PT,t.LF-t.LA,t.CO].join();if(key!=prev)pos=i+1;const tie=(T[i+1]&&[T[i+1].PT,T[i+1].LF-T[i+1].LA,T[i+1].CO].join()==key||(key==prev))&&t.P>0;prev=key;
   const c=i==0?'gd':i>=T.length-red?'r':i%2?'b':'a',old=[...S.log].reverse().find(l=>l.div==k&&l.neu==t.n),ld=t.LF-t.LA;
   return`<tr class="${c} ${i==0||i==4?'l':''}"><td>${pos}${tie?'=':''}</td><td>${E(t.n)}</td><td>${t.P}</td><td>${t.W}</td><td>${t.L}</td><td>${t.B||t.F?t.B+'/'+t.F:'-'}</td><td>${t.LF}</td><td>${t.LA}</td><td>${ld}</td><td>${t.PT}</td><td>${t.CO}</td><td>${t.s||''}</td><td>${t.av.length?(t.av.reduce((a,b)=>a+b,0)/t.av.length).toFixed(2):'0.00'}</td></tr>`}).join('');
- return divPills()+head(k)+`<div class="sub">League Table${lw?' - Week '+lw:''}</div><div class="tw"><table class="lt"><tr>${['Pos','Player Name','P','W','L','B/F','LF','LA','LD (+/-)','PTS','CO','180’s','Avg'].map(x=>`<th>${x}</th>`).join('')}</tr>${rows}</table></div><p class="c" style="font-size:13px">Ranked by points, then leg difference, then highest checkout. = joint position. <span class="pt">Turn your phone sideways for the full table.</span></p>`}
+ return divPills()+head(k)+`<div class="tw"><table class="lt"><tr>${['Pos','Player Name','P','W','L','B/F','LF','LA','LD (+/-)','PTS','CO','180’s','Avg'].map(x=>`<th>${x}</th>`).join('')}</tr>${rows}</table></div><p class="c" style="font-size:13px">Ranked by points, then leg difference, then highest checkout. = joint position. <span class="pt">Turn your phone sideways for the full table.</span></p>`}
 
 function vRs(){const k=U.k,d=S.D[k],ws=weeks(k).filter(w=>d.res.some(r=>r[0]==w));
  if(!ws.length)return divPills()+head(k)+`<p class="c">No results yet.</p>`;
@@ -130,7 +130,7 @@ function vRs(){const k=U.k,d=S.D[k],ws=weeks(k).filter(w=>d.res.some(r=>r[0]==w)
    const[,,,h,a,hl,al,hc,hv,h8,ac,av,a8,fl,hn,an]=r;lf[h==f[2]?0:1]+=hl;lf[h==f[2]?1:0]+=al;
    return`<div class="g"><span>${E(hn)}<small>${fl?'':st(hv,hc,h8)}</small></span><div><b>${hl} - ${al}</b>${fl=='b'?'<small>Bye</small>':''}</div><span>${E(an)}<small>${fl?'':st(av,ac,a8)}</small></span></div>`}).join('');
   return`<div class="rc"><h4><span>${f[4]?'P:P · ':''}${E(d.n[f[2]])} v ${E(d.n[f[3]])}</span><span>${g[0]&&g[1]?lf[0]+' - '+lf[1]:''}</span></h4>${gl}${fnote(g.filter(Boolean),1)}</div>`}).join('');
- return divPills(wkPills(ws,k))+head(k)+`<div class="sub">Season 9 - Week ${w} - Results</div>${cards}`}
+ return divPills(wkPills(ws,k))+head(k)+`${cards}`}
 
 function vAv(){const k=U.k,d=S.D[k],ps=d.n.map((n,i)=>[n,i]).filter(x=>x[0]!='Free Week'),i=ps.some(x=>x[1]==U.aw)?U.aw:ps[0][1],a=S.days[k+':'+i]||[],xw=U.awk||0;U.aw=i;
  return divPills()+head(k)+`<div class="sub">Availability</div><div class="panel"><p>Pick your name, tap a week, then tap the days you are <b>away</b>. Away days show on the fixtures page so opponents can rearrange early.</p>
