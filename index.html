@@ -128,11 +128,11 @@ function vTb(){const k=U.k,d=S.D[k],T=tbl(k),lw=Math.max(0,...d.res.map(r=>r[0])
 function vRs(){const k=U.k,d=S.D[k],ws=weeks(k).filter(w=>d.res.some(r=>r[0]==w));
  if(!ws.length)return divPills()+head(k)+`<p class="c">No results yet.</p>`;
  const w=U.w=pick(ws),st=(a,b,c)=>`avg ${a?a.toFixed(2):'-'} · CO ${b||'-'}${c?' · 180s '+c:''}`;
- const cards=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const m=f[1],g=[1,2].map(n=>gr(k,w,m,n));let lf=[0,0];
+ const cards=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const m=f[1],g=[1,2].map(n=>gr(k,w,m,n)),r0=g.find(Boolean),nm=i=>r0?(r0[3]==i?r0[14]:r0[15]):d.n[i];let lf=[0,0];
   const gl=g.map((r,j)=>{if(!r)return`<div class="g"><span>${E(d.n[j?f[3]:f[2]])}</span><b>v</b><span>${E(d.n[j?f[2]:f[3]])}</span><small style="grid-column:1/-1;text-align:center">Awaiting result</small></div>`;
    const[,,,h,a,hl,al,hc,hv,h8,ac,av,a8,fl,hn,an]=r;lf[h==f[2]?0:1]+=hl;lf[h==f[2]?1:0]+=al;
    return`<div class="g"><span>${E(hn)}<small>${fl?'':st(hv,hc,h8)}</small></span><div><b>${hl} - ${al}</b>${fl=='b'?'<small>Bye</small>':''}</div><span>${E(an)}<small>${fl?'':st(av,ac,a8)}</small></span></div>`}).join('');
-  return`<div class="rc"><h4><span>${f[4]?'P:P · ':''}${E(d.n[f[2]])} v ${E(d.n[f[3]])}</span><span>${g[0]&&g[1]?lf[0]+' - '+lf[1]:''}</span></h4>${gl}${fnote(g.filter(Boolean),1)}</div>`}).join('');
+  return`<div class="rc"><h4><span>${f[4]?'P:P · ':''}${E(nm(f[2]))} v ${E(nm(f[3]))}</span><span>${g[0]&&g[1]?lf[0]+' - '+lf[1]:''}</span></h4>${gl}${fnote(g.filter(Boolean),1)}</div>`}).join('');
  return divPills(wkPills(ws,k))+head(k)+`${cards}`}
 
 function vAv(){const k=U.k,d=S.D[k],ps=d.n.map((n,i)=>[n,i]).filter(x=>x[0]!='Free Week'),i=ps.some(x=>x[1]==U.aw)?U.aw:ps[0][1],a=S.days[k+':'+i]||[],xw=U.awk||0;U.aw=i;
@@ -296,8 +296,8 @@ const fxBlock=(k,w,f)=>{const d=S.D[k],m=f[1],done=[1,2].filter(n=>gr(k,w,m,n)).
  return`<div class='fx'>${pb(k,f[2])}<i>${f[4]?'P:P':'vs'}</i>${pb(k,f[3])}</div>${f[5]?`<div class='nt'>🌴 ${E(f[5])}</div>`:''}<div class='c' style='margin:8px 0'><button class='go${open?' s':''}' data-a='popen' data-w='${w}' data-m='${m}'>${open?'Hide upload':'Upload result'}</button></div>`+
   (open?mcard(k,w,f,1):`${done?`<div class='nt'>${done} of 2 games recorded</div>`:''}${fl?`<div class='nt'>⚑ ${fl} flagged to the admin</div>`:''}`)};
 const resultsHtml=(k,i)=>{const d=S.D[k],L=d.fx.filter(x=>(x[2]==i||x[3]==i)&&rel(k,x[0])&&(gr(k,x[0],x[1],1)||gr(k,x[0],x[1],2))).sort((a,b)=>b[0]-a[0]);
- return L.length?L.map(x=>{const o=x[2]==i?x[3]:x[2],rs=[1,2].map(n=>gr(k,x[0],x[1],n)).filter(Boolean);let a=0,b=0;rs.forEach(r=>{if(r[3]==i){a+=r[5];b+=r[6]}else{a+=r[6];b+=r[5]}});
-  return`<div class='rc'><h4><span style='color:#fff'>Week ${x[0]} vs ${E(d.n[o])}</span><span class='tt'>${a} - ${b}</span></h4>${rs.map(r=>grow(r)).join('')}${fnote(rs)}</div>`}).join(''):`<p class='c'>No results yet.</p>`};
+ return L.length?L.map(x=>{const o=x[2]==i?x[3]:x[2],rs=[1,2].map(n=>gr(k,x[0],x[1],n)).filter(Boolean),on=rs[0]?(rs[0][3]==o?rs[0][14]:rs[0][15]):d.n[o],mn=rs[0]?(rs[0][3]==i?rs[0][14]:rs[0][15]):d.n[i];let a=0,b=0;rs.forEach(r=>{if(r[3]==i){a+=r[5];b+=r[6]}else{a+=r[6];b+=r[5]}});
+  return`<div class='rc'><h4><span style='color:#fff'>Week ${x[0]} vs ${E(on)}</span><span class='tt'>${a} - ${b}</span></h4>${rs.map(r=>grow(r)).join('')}${fnote(rs)}${mn&&mn!=d.n[i]?`<div class='nt'>${E(d.n[i])} replaces ${E(mn)}</div>`:''}</div>`}).join(''):`<p class='c'>No results yet.</p>`};
 const shrink=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const z=Math.min(1,800/i.width),c=document.createElement('canvas');c.width=i.width*z;c.height=i.height*z;c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',.6))};i.onerror=no;i.src=u});
 const flagUI=()=>`<input type='text' id='pfl' placeholder='What looks wrong? (optional)'><button class='go s' data-a='pflag'>Flag to admin</button><button class='go s' data-a='pcancel'>Start again</button>`;
 const pvHtml=v=>v.err?`<div class='nt' style='text-align:left'>⚠ ${E(v.err)}${v.id?' You can flag it to the admin with the screenshot.':''}</div>`+(v.id?flagUI():`<button class='go s' data-a='pcancel'>Try again</button>`):
