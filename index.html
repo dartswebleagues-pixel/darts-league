@@ -100,7 +100,7 @@ const rel=(k,w)=>{const r=S.rel[k+':'+w];return r===1||(r!==-1&&Date.now()>=wd(w
 const adm=()=>U.isAdm&&!U.prev;
 const weeks=k=>{const o=[];for(let w=1;w<=maxW(k);w++)if(adm()||rel(k,w))o.push(w);return o};
 const gr=(k,w,m,g)=>S.D[k].res.find(r=>r[0]==w&&r[1]==m&&r[2]==g);
-const fn=(k,w,m,i)=>{const g=[1,2].map(n=>gr(k,w,m,n));return g[0]&&g[1]?(g[0][3]==i?g[0][14]:g[0][15]):S.D[k].n[i]};
+const fn=(k,w,m,i)=>{const r=gr(k,w,m,1)||gr(k,w,m,2);return r?(r[3]==i?r[14]:r[15])||S.D[k].n[i]:S.D[k].n[i]};
 const pick=ws=>ws.includes(U.w)?U.w:ws[ws.length-1];
 
 function tbl(k){const d=S.D[k],R=d.n.map((n,i)=>({n,P:0,W:0,L:0,B:0,F:0,LF:0,LA:0,PT:0,CO:0,s:0,av:[],fm:[]}));
