@@ -100,6 +100,8 @@ const rel=(k,w)=>{const r=S.rel[k+':'+w];return r===1||(r!==-1&&Date.now()>=wd(w
 const adm=()=>U.isAdm&&!U.prev;
 const weeks=k=>{const o=[];for(let w=1;w<=maxW(k);w++)if(adm()||rel(k,w))o.push(w);return o};
 const gr=(k,w,m,g)=>S.D[k].res.find(r=>r[0]==w&&r[1]==m&&r[2]==g);
+const getPic=(k,i)=>{const pc=U.pc=U.pc||{},pp=U.pp=U.pp||{},key=k+':'+i+':'+S.pics[k+':'+i];if(pc[key])return Promise.resolve(pc[key]);if(!pp[key])pp[key]=api('profilePic',{k,i}).then(r=>{if(r.img)pc[key]=r.img;return r.img}).finally(()=>{delete pp[key]});return pp[key]};
+const prefetch=(k,idx)=>{if(!U.user||!U.me&&!U.isAdm)return;const pt=U.pt=U.pt||{},q=[...new Set(idx)].filter(i=>S.pics[k+':'+i]&&!pt[k+':'+i+':'+S.pics[k+':'+i]]);q.forEach(i=>pt[k+':'+i+':'+S.pics[k+':'+i]]=1);const nx=()=>{const i=q.shift();if(i===undefined)return;getPic(k,i).catch(()=>{}).then(nx)};nx();nx();nx()};
 const fn=(k,w,m,i)=>{const r=gr(k,w,m,1)||gr(k,w,m,2);return r?(r[3]==i?r[14]:r[15])||S.D[k].n[i]:S.D[k].n[i]};
 const pick=ws=>ws.includes(U.w)?U.w:ws[ws.length-1];
 
@@ -118,6 +120,7 @@ function vFx(){const k=U.k,d=S.D[k],ws=weeks(k);
  const w=U.w=pick(ws);
  const rows=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const[,m,h,a,pp,note]=f,aw=[h,a].map(i=>[d.n[i],dayTxt(S.days[k+':'+i]||[],w)]).filter(x=>x[1]).map(x=>x[0]+' ('+x[1]+')');
   const rp=n=>S.log.find(l=>l.type=='Replace'&&l.div==k&&l.w==w&&l.neu==n),rh=rp(d.n[h]),ra=rp(d.n[a]),rn=l=>l?E(l.neu+' replaces '+l.old):'';return`<div class="fx">${pb(k,h,rh?'rp':'',fn(k,w,m,h))}<i>${pp?'P:P':'vs'}</i>${pb(k,a,ra?'rp':'',fn(k,w,m,a))}</div>${rh||ra?`<div class="fx rn"><div>${rn(rh)}</div><span></span><div>${rn(ra)}</div></div>`:''}${note?`<div class="nt">🌴 ${E(note)}</div>`:''}${aw.length?`<div class="nt">🌴 Away: ${E(aw.join(', '))}</div>`:''}`}).join('');
+ setTimeout(()=>prefetch(k,d.fx.filter(f=>f[0]==w).flatMap(f=>[f[2],f[3]])),0);
  return divPills(wkPills(ws,k))+head(k)+`<div class="dl">${dl(w)}</div>${rows}`+(rel(k,w)?'':`<div class="warn">Week ${w} is not yet released to players (admin preview).</div>`)}
 
 function vTb(){const k=U.k,d=S.D[k],T=tbl(k),lw=Math.max(0,...d.res.map(r=>r[0])),red=k=='Prem'?4:2;let prev=null,pos=0;
@@ -198,7 +201,7 @@ const A={div:d=>{U.k=d.v;U.w=0;U.rw=0;U.aopen=null;U.apre=null;U.draw=null;R()},
  apply:()=>{const k=U.k,d=S.D[k];d.n=U.draw.p;d.fx=U.draw.fx;d.res=[];Object.keys(S.days).filter(x=>x.startsWith(k+':')).forEach(x=>delete S.days[x]);S.log.unshift({t:new Date().toLocaleString('en-GB'),div:k,type:'Draw',old:'',neu:'',why:d.n.length+' players, '+(d.n.length-1)+' weeks',by:'Admin'});U.draw=null;save();R()},
  reset:()=>{S=fresh();save();R()}};
 Object.assign(A,{
- pic:d=>{if(!U.user){U.pic={err:'Sign in to see player pictures.'};return R()}const pc=U.pc=U.pc||{},ck=d.k+':'+(+d.i)+':'+S.pics[d.k+':'+(+d.i)];if(pc[ck]){U.pic={k:d.k,i:+d.i,img:pc[ck]};return R()}U.pic={k:d.k,i:+d.i,loading:true};R();const p=U.pic;api('profilePic',{k:d.k,i:+d.i}).then(r=>{p.img=r.img;if(r.img)pc[ck]=r.img}).catch(e=>{p.err=e.message}).finally(()=>{p.loading=false;if(U.pic===p)R()})},
+ pic:d=>{if(!U.user){U.pic={err:'Sign in to see player pictures.'};return R()}const k=d.k,i=+d.i,pc=U.pc=U.pc||{},ck=k+':'+i+':'+S.pics[k+':'+i];if(pc[ck]){U.pic={k,i,img:pc[ck]};return R()}U.pic={k,i,loading:true};R();const p=U.pic;getPic(k,i).then(img=>{p.img=img}).catch(e=>{p.err=e.message}).finally(()=>{p.loading=false;if(U.pic===p)R()})},
  picx:()=>{U.pic=null;R()},
  noop:()=>{},
  picme:()=>{U.pic={k:U.me.k,i:U.me.i,img:U.mypic,own:true};R()},
