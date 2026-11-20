@@ -113,7 +113,7 @@ function tbl(k){const d=S.D[k],R=d.n.map((n,i)=>({n,i,P:0,W:0,L:0,B:0,F:0,LF:0,L
 
 const head=k=>`<h2>${E(S.D[k].t)}</h2>`;
 const divPills=(x='')=>`<div class="sl"><select id="dsel" aria-label="Division">${K.map(k=>`<option value="${k}" ${k==U.k?'selected':''}>${E(S.D[k].t)}</option>`).join('')}</select>${x}</div>`;
-const wkPills=(ws,k,po)=>`<select id="wsel" aria-label="Week">${ws.map(w=>`<option value="${w}" ${w==U.w?'selected':''}>${rel(k,w)?'':'🔒 '}Week ${w}</option>`).join('')}${po&&bracket(k)?`<option value="PO" ${U.w=='PO'?'selected':''}>${S.done[k]?'':'🔒 '}Playoffs</option>`:''}</select>`;
+const wkPills=(ws,k,po,rp)=>`<select id="wsel" aria-label="Week">${ws.map(w=>`<option value="${w}" ${w==U.w?'selected':''}>${rel(k,w)?'':'🔒 '}Week ${w}</option>`).join('')}${po&&bracket(k)?`<option value="PO" ${U.w=='PO'?'selected':''}>${S.done[k]?'':'🔒 '}Playoffs</option>`:rp?`<option value="PO" ${U.w=='PO'?'selected':''}>Playoffs</option>`:''}</select>`;
 
 function vFx(){const k=U.k,d=S.D[k],ws=weeks(k);
  if(!ws.length)return divPills()+`<p class="c">Fixtures appear at the start of each game week.</p>`;
@@ -130,15 +130,17 @@ function vTb(){const k=U.k,d=S.D[k],T=tbl(k),lw=Math.max(0,...d.res.map(r=>r[0])
   return`<tr class="${c} ${i==0||i==4?'l':''}"><td>${pos}${tie?'=':''}</td><td>${E(t.n)}</td><td>${t.P}</td><td>${t.W}</td><td>${t.L}</td><td>${t.B||t.F?t.B+'/'+t.F:'-'}</td><td>${t.LF}</td><td>${t.LA}</td><td>${ld}</td><td>${t.PT}</td><td>${t.CO}</td><td>${t.s||''}</td><td>${t.av.length?(t.av.reduce((a,b)=>a+b,0)/t.av.length).toFixed(2):'0.00'}</td><td class="fo">${t.fm.slice(-5).map(x=>`<i class="${x?'fw':'fl'}"></i>`).join('')}</td></tr>`}).join('');
  return divPills()+head(k)+`<div class="tw"><table class="lt"><tr>${['Pos','Player Name','P','W','L','B/F','LF','LA','LD (+/-)','PTS','CO','180’s','Avg','Form'].map(x=>`<th>${x}</th>`).join('')}</tr>${rows}</table></div><p class="c" style="font-size:13px">Ranked by points, then leg difference, then highest checkout. = joint position. <span class="pt">Turn your phone sideways for the full table.</span></p>`}
 
-function vRs(){const k=U.k,d=S.D[k],ws=weeks(k).filter(w=>d.res.some(r=>r[0]==w));
- if(!ws.length)return divPills()+head(k)+`<p class="c">No results yet.</p>`;
+function vRs(){const k=U.k,d=S.D[k],ws=weeks(k).filter(w=>d.res.some(r=>r[0]==w)),pk=S.po.some(p=>p.k==k)&&!!bracket(k);
+ if(!ws.length&&!pk)return divPills()+head(k)+`<p class="c">No results yet.</p>`;
+ if(pk&&(U.w=='PO'||!ws.length)){U.w='PO';const b=bracket(k),cd=m=>`<div class="rc"><h4><span>${E(m.hn)} v ${E(m.an)}</span></h4>${m.done?grow(['PO',m.r,1,m.h,m.a,m.hl,m.al,m.hco,m.hav,m.h8,m.aco,m.aav,m.a8,'',m.hn,m.an]):`<div class="g"><span>${E(m.hn)}</span><b>v</b><span>${E(m.an)}</span><small style="grid-column:1/-1;text-align:center">Awaiting result</small></div>`}</div>`;
+  return divPills(wkPills(ws,k,0,1))+head(k)+`<h3>Semi Finals (Best of 7)</h3>`+cd(b.SF1)+cd(b.SF2)+`<h3 style="margin-top:34px">Final (Best of 9)</h3>`+cd(b.F)}
  const w=U.w=pick(ws),st=(a,b,c)=>`avg ${a?a.toFixed(2):'-'} · CO ${b||'-'}${c?' · 180s '+c:''}`;
  const cards=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const m=f[1],g=[1,2].map(n=>gr(k,w,m,n)),r0=g.find(Boolean),nm=i=>r0?(r0[3]==i?r0[14]:r0[15]):d.n[i];let lf=[0,0];
   const gl=g.map((r,j)=>{if(!r)return`<div class="g"><span>${E(d.n[j?f[3]:f[2]])}</span><b>v</b><span>${E(d.n[j?f[2]:f[3]])}</span><small style="grid-column:1/-1;text-align:center">Awaiting result</small></div>`;
    const[,,,h,a,hl,al,hc,hv,h8,ac,av,a8,fl,hn,an]=r;lf[h==f[2]?0:1]+=hl;lf[h==f[2]?1:0]+=al;
    return`<div class="g"><span>${E(hn)}<small>${fl?'':st(hv,hc,h8)}</small></span><div><b>${hl} - ${al}</b>${fl=='b'?'<small>Bye</small>':''}</div><span>${E(an)}<small>${fl?'':st(av,ac,a8)}</small></span></div>`}).join('');
   return`<div class="rc"><h4><span>${f[4]?'P:P · ':''}${E(nm(f[2]))} v ${E(nm(f[3]))}</span><span>${g[0]&&g[1]?lf[0]+' - '+lf[1]:''}</span></h4>${gl}${fnote(g.filter(Boolean),1)}</div>`}).join('');
- return divPills(wkPills(ws,k))+head(k)+`${cards}`}
+ return divPills(wkPills(ws,k,0,pk))+head(k)+`${cards}`}
 
 function vAv(){const k=U.k,d=S.D[k],ps=d.n.map((n,i)=>[n,i]).filter(x=>x[0]!='Free Week'),i=ps.some(x=>x[1]==U.aw)?U.aw:ps[0][1],a=S.days[k+':'+i]||[],xw=U.awk||0;U.aw=i;
  return divPills()+head(k)+`<div class="sub">Availability</div><div class="panel"><p>Pick your name, tap a week, then tap the days you are <b>away</b>. Away days show on the fixtures page so opponents can rearrange early.</p>
@@ -326,8 +328,8 @@ const subP=()=>{const n=S.asubs.reduce((a,x)=>a+x.n,0),lab={flagged:'⚑ Flagged
 const bracket=k=>{if(k=='Prem')return null;const T=tbl(k);if(T.length<5)return null;const by=r=>S.po.find(p=>p.k==k&&p.r==r),n=S.D[k].n,
  mk=(r,a,b)=>{const p=by(r);return p?{r,h:p.h,a:p.a,hn:p.hn,an:p.an,hl:p.hl,al:p.al,hco:p.hco,hav:p.hav,h8:p.h8,aco:p.aco,aav:p.aav,a8:p.a8,done:1}:{r,h:a,a:b,hn:a==null?'TBC':n[a],an:b==null?'TBC':n[b],done:0}},
  S1=mk('SF1',T[1].i,T[4].i),S2=mk('SF2',T[2].i,T[3].i),w=m=>m.done?(m.hl>m.al?{i:m.h,n:m.hn}:{i:m.a,n:m.an}):null,w1=w(S1),w2=w(S2);
- return{T,SF1:S1,SF2:S2,F:by('F')?mk('F'):mk('F',w1&&w2?w1.i:null,w1&&w2?w2.i:null)}};
-const poFx=(k,m)=>{const x=(i,n)=>i==null?`<b>${E(n)}</b>`:pb(k,i,'',n);return`<div class="fx">${x(m.h,m.hn)}<i>${m.done?m.hl+' - '+m.al:'vs'}</i>${x(m.a,m.an)}</div>`};
+ return{T,SF1:S1,SF2:S2,F:by('F')?mk('F'):w1&&w2?mk('F',w1.i,w2.i):{r:'F',h:null,a:null,hn:w1?w1.n:'Winner Semi Final 1',an:w2?w2.n:'Winner Semi Final 2',done:0}}};
+const poFx=(k,m)=>{const x=(i,n)=>i==null?`<b>${E(n)}</b>`:pb(k,i,'',n);return`<div class="fx">${x(m.h,m.hn)}<i>vs</i>${x(m.a,m.an)}</div>`};
 const poL={SF1:'Semi final 1 · 2nd v 5th · Best of 7',SF2:'Semi final 2 · 3rd v 4th · Best of 7',F:'Final · Best of 9'};
 const poM=m=>`<div class='rc'><h4><span>${poL[m.r]}</span></h4><div class='g'><span>${E(m.hn)}</span><div><b>${m.done?m.hl+' - '+m.al:'v'}</b></div><span>${E(m.an)}</span></div><small>Bull up to decide who starts</small></div>`;
 const poCard=(k,i)=>{if(!S.done[k])return'';const b=bracket(k);if(!b)return'';const L=['SF1','SF2','F'].map(r=>b[r]).filter(m=>m.h===i||m.a===i);return L.length?`<h3>Playoffs</h3>`+L.map(poM).join(''):''};
