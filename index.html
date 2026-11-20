@@ -113,15 +113,16 @@ function tbl(k){const d=S.D[k],R=d.n.map((n,i)=>({n,i,P:0,W:0,L:0,B:0,F:0,LF:0,L
 
 const head=k=>`<h2>${E(S.D[k].t)}</h2>`;
 const divPills=(x='')=>`<div class="sl"><select id="dsel" aria-label="Division">${K.map(k=>`<option value="${k}" ${k==U.k?'selected':''}>${E(S.D[k].t)}</option>`).join('')}</select>${x}</div>`;
-const wkPills=(ws,k)=>`<select id="wsel" aria-label="Week">${ws.map(w=>`<option value="${w}" ${w==U.w?'selected':''}>${rel(k,w)?'':'🔒 '}Week ${w}</option>`).join('')}</select>`;
+const wkPills=(ws,k,po)=>`<select id="wsel" aria-label="Week">${ws.map(w=>`<option value="${w}" ${w==U.w?'selected':''}>${rel(k,w)?'':'🔒 '}Week ${w}</option>`).join('')}${po&&bracket(k)?`<option value="PO" ${U.w=='PO'?'selected':''}>${S.done[k]?'':'🔒 '}Playoffs</option>`:''}</select>`;
 
 function vFx(){const k=U.k,d=S.D[k],ws=weeks(k);
  if(!ws.length)return divPills()+`<p class="c">Fixtures appear at the start of each game week.</p>`;
- const w=U.w=pick(ws);
+ const w=U.w=U.w=='PO'&&bracket(k)?'PO':pick(ws);
+ if(w=='PO'){const b=bracket(k),sh=S.done[k]||adm();return divPills(wkPills(ws,k,1))+head(k)+(sh?['SF1','SF2','F'].map(r=>poM(b[r])).join('')+(S.done[k]?'':`<div class="warn">Playoffs are not yet visible to players (admin preview).</div>`):`<p class="c">🔒 Playoffs unlock once every league game has been played.</p>`)}
  const rows=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const[,m,h,a,pp,note]=f,aw=[h,a].map(i=>[d.n[i],dayTxt(S.days[k+':'+i]||[],w)]).filter(x=>x[1]).map(x=>x[0]+' ('+x[1]+')');
   const rp=n=>S.log.find(l=>l.type=='Replace'&&l.div==k&&l.w==w&&l.neu==n),rh=rp(d.n[h]),ra=rp(d.n[a]),rn=l=>l?E(l.neu+' replaces '+l.old):'';return`<div class="fx">${pb(k,h,rh?'rp':'',fn(k,w,m,h))}<i>${pp?'P:P':'vs'}</i>${pb(k,a,ra?'rp':'',fn(k,w,m,a))}</div>${rh||ra?`<div class="fx rn"><div>${rn(rh)}</div><span></span><div>${rn(ra)}</div></div>`:''}${note?`<div class="nt">🌴 ${E(note)}</div>`:''}${aw.length?`<div class="nt">🌴 Away: ${E(aw.join(', '))}</div>`:''}`}).join('');
  setTimeout(()=>prefetch(k,d.fx.filter(f=>f[0]==w).flatMap(f=>[f[2],f[3]])),0);
- return divPills(wkPills(ws,k))+head(k)+`<div class="dl">${dl(w)}</div>${rows}`+(rel(k,w)?'':`<div class="warn">Week ${w} is not yet released to players (admin preview).</div>`)}
+ return divPills(wkPills(ws,k,1))+head(k)+`<div class="dl">${dl(w)}</div>${rows}`+(rel(k,w)?'':`<div class="warn">Week ${w} is not yet released to players (admin preview).</div>`)}
 
 function vTb(){const k=U.k,d=S.D[k],T=tbl(k),lw=Math.max(0,...d.res.map(r=>r[0])),red=k=='Prem'?4:2;let prev=null,pos=0;
  const rows=T.map((t,i)=>{const key=[t.PT,t.LF-t.LA,t.CO].join();if(key!=prev)pos=i+1;const tie=(T[i+1]&&[T[i+1].PT,T[i+1].LF-T[i+1].LA,T[i+1].CO].join()==key||(key==prev))&&t.P>0;prev=key;
@@ -144,7 +145,7 @@ function vAv(){const k=U.k,d=S.D[k],ps=d.n.map((n,i)=>[n,i]).filter(x=>x[0]!='Fr
  <select data-s="aw">${ps.map(([n,j])=>`<option value="${j}" ${j==i?'selected':''}>${E(n)}</option>`).join('')}</select><div>${Array.from({length:maxW(k)},(_,j)=>j+1).map(w=>`<span class="chip ${a.some(n=>n>=7*(w-1)&&n<=7*w)?'on':''} ${w==xw?'x':''}" data-a="awk" data-v="${w}">Wk ${w}<br><small>${sd(w)}</small></span>`).join('')}</div>${xw?`<div class="panel" style="margin:8px 0 0"><b>Week ${xw}:</b> tap the days you are away<br>${Array.from({length:8},(_,j)=>7*(xw-1)+j).map(n=>`<span class="chip ${a.includes(n)?'on':''}" data-a="away" data-v="${n}">${dlab(n)}</span>`).join('')}<br><button class="go s" data-a="awall">Whole week</button><button class="go s" data-a="awno">Clear week</button></div>`:''}</div>
  <div class="warn">Prototype: anyone can edit anyone’s availability. The live version will ask each player to sign in first.</div>`}
 
-const A={div:d=>{U.k=d.v;U.w=0;U.rw=0;U.aopen=null;U.apre=null;U.draw=null;R()},wk:d=>{U.w=+d.v;R()},away:d=>{const key=akey(),a=S.days[key]||[],n=+d.v;S.days[key]=a.includes(n)?a.filter(x=>x!=n):[...a,n];save();R()},cal:d=>{const x=new Date(U.cm.y,U.cm.m+ +d.v,1);U.cm={y:x.getFullYear(),m:x.getMonth()};R()},awk:d=>{U.awk=U.awk==+d.v?0:+d.v;R()},awall:()=>{const key=U.k+':'+U.aw,w=U.awk;S.days[key]=[...new Set([...(S.days[key]||[]),...Array.from({length:8},(_,j)=>7*(w-1)+j)])];save();R()},awno:()=>{const key=U.k+':'+U.aw,w=U.awk;S.days[key]=(S.days[key]||[]).filter(n=>n<7*(w-1)||n>7*w);save();R()},
+const A={div:d=>{U.k=d.v;U.w=0;U.rw=0;U.aopen=null;U.apre=null;U.draw=null;R()},wk:d=>{U.w=d.v=='PO'?'PO':+d.v;R()},away:d=>{const key=akey(),a=S.days[key]||[],n=+d.v;S.days[key]=a.includes(n)?a.filter(x=>x!=n):[...a,n];save();R()},cal:d=>{const x=new Date(U.cm.y,U.cm.m+ +d.v,1);U.cm={y:x.getFullYear(),m:x.getMonth()};R()},awk:d=>{U.awk=U.awk==+d.v?0:+d.v;R()},awall:()=>{const key=U.k+':'+U.aw,w=U.awk;S.days[key]=[...new Set([...(S.days[key]||[]),...Array.from({length:8},(_,j)=>7*(w-1)+j)])];save();R()},awno:()=>{const key=U.k+':'+U.aw,w=U.awk;S.days[key]=(S.days[key]||[]).filter(n=>n<7*(w-1)||n>7*w);save();R()},
  tab:d=>{if(U.tab=='home'&&U.me&&S.D[U.me.k]&&['fx','tb','rs','po'].includes(d.v))U.k=U.me.k;U.tab=d.v;R()},adm:d=>{U.adm=d.v;U.tab='ad';U.aopen=null;U.apre=null;R()},prev:()=>{U.prev=!U.prev;if(U.prev&&U.tab=='ad')U.tab='home';R()},
  rel:d=>{const key=U.k+':'+d.w;if(d.v=='auto')delete S.rel[key];else S.rel[key]=+d.v;save();R()},
  pp:()=>{const f=S.D[U.k].fx.find(f=>f[0]==U.rw&&f[1]==U.rm);f[4]=f[4]?0:1;save();R()},
