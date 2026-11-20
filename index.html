@@ -118,7 +118,7 @@ const wkPills=(ws,k,po)=>`<select id="wsel" aria-label="Week">${ws.map(w=>`<opti
 function vFx(){const k=U.k,d=S.D[k],ws=weeks(k);
  if(!ws.length)return divPills()+`<p class="c">Fixtures appear at the start of each game week.</p>`;
  const w=U.w=U.w=='PO'&&bracket(k)?'PO':pick(ws);
- if(w=='PO'){const b=bracket(k),sh=S.done[k]||adm();return divPills(wkPills(ws,k,1))+head(k)+(sh?['SF1','SF2','F'].map(r=>poM(b[r])).join('')+(S.done[k]?'':`<div class="warn">Playoffs are not yet visible to players (admin preview).</div>`):`<p class="c">🔒 Playoffs unlock once every league game has been played.</p>`)}
+ if(w=='PO'){const b=bracket(k),sh=S.done[k]||adm();return divPills(wkPills(ws,k,1))+head(k)+(sh?`<h3>Semi Finals (Best of 7)</h3>`+poFx(k,b.SF1)+poFx(k,b.SF2)+`<h3 style="margin-top:34px">Final (Best of 9)</h3>`+poFx(k,b.F)+`<p class="c"><small>Bull up to decide who starts</small></p>`+(S.done[k]?'':`<div class="warn">Playoffs are not yet visible to players (admin preview).</div>`):`<p class="c">🔒 Playoffs unlock once every league game has been played.</p>`)}
  const rows=d.fx.filter(f=>f[0]==w).sort((a,b)=>a[1]-b[1]).map(f=>{const[,m,h,a,pp,note]=f,aw=[h,a].map(i=>[d.n[i],dayTxt(S.days[k+':'+i]||[],w)]).filter(x=>x[1]).map(x=>x[0]+' ('+x[1]+')');
   const rp=n=>S.log.find(l=>l.type=='Replace'&&l.div==k&&l.w==w&&l.neu==n),rh=rp(d.n[h]),ra=rp(d.n[a]),rn=l=>l?E(l.neu+' replaces '+l.old):'';return`<div class="fx">${pb(k,h,rh?'rp':'',fn(k,w,m,h))}<i>${pp?'P:P':'vs'}</i>${pb(k,a,ra?'rp':'',fn(k,w,m,a))}</div>${rh||ra?`<div class="fx rn"><div>${rn(rh)}</div><span></span><div>${rn(ra)}</div></div>`:''}${note?`<div class="nt">🌴 ${E(note)}</div>`:''}${aw.length?`<div class="nt">🌴 Away: ${E(aw.join(', '))}</div>`:''}`}).join('');
  setTimeout(()=>prefetch(k,d.fx.filter(f=>f[0]==w).flatMap(f=>[f[2],f[3]])),0);
@@ -327,6 +327,7 @@ const bracket=k=>{if(k=='Prem')return null;const T=tbl(k);if(T.length<5)return n
  mk=(r,a,b)=>{const p=by(r);return p?{r,h:p.h,a:p.a,hn:p.hn,an:p.an,hl:p.hl,al:p.al,hco:p.hco,hav:p.hav,h8:p.h8,aco:p.aco,aav:p.aav,a8:p.a8,done:1}:{r,h:a,a:b,hn:a==null?'TBC':n[a],an:b==null?'TBC':n[b],done:0}},
  S1=mk('SF1',T[1].i,T[4].i),S2=mk('SF2',T[2].i,T[3].i),w=m=>m.done?(m.hl>m.al?{i:m.h,n:m.hn}:{i:m.a,n:m.an}):null,w1=w(S1),w2=w(S2);
  return{T,SF1:S1,SF2:S2,F:by('F')?mk('F'):mk('F',w1&&w2?w1.i:null,w1&&w2?w2.i:null)}};
+const poFx=(k,m)=>{const x=(i,n)=>i==null?`<b>${E(n)}</b>`:pb(k,i,'',n);return`<div class="fx">${x(m.h,m.hn)}<i>${m.done?m.hl+' - '+m.al:'vs'}</i>${x(m.a,m.an)}</div>`};
 const poL={SF1:'Semi final 1 · 2nd v 5th · Best of 7',SF2:'Semi final 2 · 3rd v 4th · Best of 7',F:'Final · Best of 9'};
 const poM=m=>`<div class='rc'><h4><span>${poL[m.r]}</span></h4><div class='g'><span>${E(m.hn)}</span><div><b>${m.done?m.hl+' - '+m.al:'v'}</b></div><span>${E(m.an)}</span></div><small>Bull up to decide who starts</small></div>`;
 const poCard=(k,i)=>{if(!S.done[k])return'';const b=bracket(k);if(!b)return'';const L=['SF1','SF2','F'].map(r=>b[r]).filter(m=>m.h===i||m.a===i);return L.length?`<h3>Playoffs</h3>`+L.map(poM).join(''):''};
