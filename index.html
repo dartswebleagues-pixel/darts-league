@@ -80,6 +80,9 @@ async function idTok(){if(TOK&&Date.now()<TEXP-60000)return TOK;let rt=null;try{
 async function api(action,p={}){const token=await idTok(),req=()=>fetch(CFG.API,{method:'POST',body:JSON.stringify(Object.assign({action,token},p))}),r=await req().catch(async e=>{if(action!='state'&&action!='profilePic')throw e;await new Promise(z=>setTimeout(z,1500));return req()}),t=await r.text();let j;
  try{j=JSON.parse(t)}catch(e){throw new Error('The server sent back a web page instead of data. Open the web app address from config.js in your browser. It should say "Double Top Online Darts League API is running". If it shows an error or a sign-in page, the Apps Script needs fixing or redeploying.')}
  if(!j.ok)throw new Error(j.error||'Something went wrong.');return j}
+let lastWarm=0;const warm=()=>{const n=Date.now();if(n-lastWarm<12e4)return;lastWarm=n;try{fetch(CFG.API,{method:'POST',body:'{"action":"ping"}'}).catch(()=>{})}catch(e){}};warm();
+document.addEventListener('focusin',e=>{if(e.target.id=='ae'||e.target.id=='ap')warm()});
+async function enter(){try{if(!S.D){await load();return}const j=await api('me');U.isAdm=!!j.admin;U.role=j.role||{};U.acct=j.me;U.user=j.me?j.me.email:null;U.me=j.me&&j.me.status=='linked'?{k:j.me.k,i:j.me.i}:null;S.myVote=j.myVote||'';U.mpk=null;U.mypic=null;if(U.me){U.k=U.me.k;U.k0=1}if(!S.D[U.k])U.k=Object.keys(S.D)[0];U.tab='home';U.msg='';U.loading=false;U.err='';R();load().catch(e=>{U.err=e.message;R()})}catch(e){U.msg='';U.loading=false;U.err='Signed in, but the league data could not load. '+e.message;R()}}
 function apply(j){S.D=j.D;S.rel=j.rel||{};S.days=j.days||{};S.log=j.log||[];S.subs=j.mysubs||[];S.asubs=j.asubs||[];S.accts=j.accts||[];S.staff=j.staff||[];S.setup=j.setup||[];S.done=j.done||{};S.po=j.po||[];S.relAt=j.relAt||{};S.champs=j.champs||[];S.voteOpen=!!j.voteOpen;S.voteOn=!!j.voteOn;S.voteClose=j.voteClose||0;S.myVote=j.myVote||'';S.intent=j.intent||[];S.next=j.next||[];S.relCfg=j.relCfg||{day:5,tm:'00:00'};S.lg={};(j.logins||[]).forEach(x=>S.lg[x.e]=x);S.track=j.track||0;S.season=j.season||{};S.pics=j.pics||{};K=Object.keys(S.D);
  if(j.start){const p=j.start.split('-').map(Number);START[0]=p[0];START[1]=p[1]-1;START[2]=p[2]}
  U.isAdm=!!j.admin;U.role=j.role||{};S.roles=j.roles||null;U.acct=j.me;U.user=j.me?j.me.email:null;U.me=j.me&&j.me.status=='linked'?{k:j.me.k,i:j.me.i}:null;
@@ -217,9 +220,9 @@ Object.assign(A,{
   if(was){U.loading=true;R();load().catch(e=>{U.loading=false;U.err=e.message;R()})}else{R();load().catch(()=>{})}},
  retry:()=>{U.err='';U.loading=true;R();load().catch(e=>{U.loading=false;U.err=e.message;R()})},
  am:d=>{U.am=d.v;U.msg='';R()},
- signin:async()=>{const em=$v('ae').trim(),pw=$v('ap');U.msg='Signing in…';U.em=em;R();try{setTok(await fb('accounts:signInWithPassword',{email:em,password:pw,returnSecureToken:true}));await load()}catch(e){U.msg=e.message;R()}},
+ signin:async()=>{const em=$v('ae').trim(),pw=$v('ap');U.msg='Signing in…';U.em=em;R();try{setTok(await fb('accounts:signInWithPassword',{email:em,password:pw,returnSecureToken:true}));await enter()}catch(e){U.msg=e.message;R()}},
  signup:async()=>{const em=$v('ae').trim(),pw=$v('ap');U.msg='';U.em=em;if(pw!==$v('ap2')){U.msg='The two passwords do not match.';return R()}U.msg='Creating your account…';R();try{setTok(await fb('accounts:signUp',{email:em,password:pw,returnSecureToken:true}))}catch(e){U.msg=e.message;return R()}
-  U.msg='';U.user=em;U.acct={email:em,status:'none'};U.isAdm=false;U.role={};U.me=null;U.tab='home';U.loading=true;U.err='';R();load().catch(e=>{U.loading=false;U.err=e.message;R()})},
+  U.msg='';await enter()},
  reset:async()=>{const em=$v('ae').trim();U.msg='';U.em=em;if(!em){U.msg='Type your email address first, then press Forgot password.';return R()}U.msg='Sending…';R();try{await fb('accounts:sendOobCode',{requestType:'PASSWORD_RESET',email:em});U.msg='If that email has an account, a reset link is on its way. Check your spam folder too.'}catch(e){U.msg=e.message}R()},
  me:()=>run(()=>api('claim',{k:$v('hk'),i:+$v('hp')})),
  unme:()=>A.signout(),
