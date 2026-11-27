@@ -292,7 +292,7 @@ function vHome(){const m=U.me,D=S.D[m&&m.k];
  if(U.acct&&U.acct.status=='blocked')return`<h2>Account blocked</h2><p class='c'>This account has been blocked. Please contact the admin.</p><div class='c'><button class='go s' data-a='unme'>Sign out</button></div>`;
  if(U.acct&&U.acct.status=='pending')return`<h2>Waiting for approval</h2><div class='panel'><p>Thanks. The admin needs to approve your account before your player page opens. Come back and refresh once you have been approved.</p></div><div class='c'><button class='go s' data-a='unme'>Sign out</button> ${DCA}</div>`;
  if(!D||!D.n[m.i]||D.n[m.i]=='Free Week'){const hk=U.hk||K[0];return`<h2>Welcome</h2><div class='panel'><p>Choose your division and name to see your fixture, your place in the table and any games still to play.</p><select id='hk'>${K.map(k=>`<option value='${k}' ${k==hk?'selected':''}>${E(S.D[k].t)}</option>`).join('')}</select> <select id='hp'>${S.D[hk].n.map((n,i)=>n=='Free Week'?'':`<option value='${i}'>${E(n)}</option>`).join('')}</select><br><button class='go' data-a='me'>Continue</button></div><div class='c'>${DCA}</div>`}
- const k=m.k,i=m.i,d=D,T=tbl(k);let cw=curW(k);while(cw>0&&!rel(k,cw))cw--;
+ const k=m.k,i=m.i,d=D,T=tbl(k);let cw=maxW(k);while(cw>0&&!rel(k,cw))cw--;
  const f=cw&&d.fx.find(x=>x[0]==cw&&(x[2]==i||x[3]==i)),ix=T.findIndex(t=>t.n==d.n[i]),pos=[];let pv=null,pp=0;
  T.forEach((t,j)=>{const key=[t.PT,t.LF-t.LA,t.CO].join();if(key!=pv)pp=j+1;pv=key;pos.push(pp)});
  const rows=[ix-1,ix,ix+1].filter(j=>j>=0&&j<T.length).map(j=>{const t=T[j],tie=t.P>0&&(pos[j-1]===pos[j]||pos[j+1]===pos[j]);return`<tr class='${j==ix?'gd':'b'}'><td>${pos[j]}${tie?'=':''}</td><td>${E(t.n)}</td><td>${t.P}</td><td>${t.W}</td><td>${t.L}</td><td>${t.B||t.F?t.B+'/'+t.F:'-'}</td><td>${t.LF}</td><td>${t.LA}</td><td>${t.LF-t.LA}</td><td>${t.PT}</td><td>${t.CO}</td><td>${t.s||''}</td><td>${t.av.length?(t.av.reduce((a,b)=>a+b,0)/t.av.length).toFixed(2):'0.00'}</td></tr>`}).join('');
@@ -300,7 +300,7 @@ function vHome(){const m=U.me,D=S.D[m&&m.k];
  const pic=U.mypic?`<img class='pic' decoding='async' src='${U.mypic}' alt='Your DartCounter ID' data-a='picme'>`:`<label class='pa'>Add your DartCounter ID picture<br><small>Crop it to your name and avatar. Only signed-in league players can see it.</small><input type='file' id='pup' accept='image/*' hidden></label>`;
  return`<div class='ph'><div class='pl'><h2>${E(d.n[i])}</h2><div class='sub'>${E(d.t)}</div><div>${DCA}</div></div><div class='pr'>${pic}</div></div>
  ${voteP()}
- <h3>${cw?'Week '+cw+' fixture':'Your fixtures'}</h3>${f?`<div class='dl'>${dl(cw)}</div>`+fxBlock(k,cw,f):`<p class='c'>${cw?'You have no fixture this week.':'Your first fixture appears at the start of Week 1.'}</p>`}
+ <h3>${cw?'Week '+cw+' fixture':'Your fixtures'}</h3>${f?`<div class='dl'>${dl(cw)}</div>`+fxBlock(k,cw,f)+awayNote(k,cw,f):`<p class='c'>${cw?'You have no fixture this week.':'Your first fixture appears at the start of Week 1.'}</p>`}
  ${poCard(k,i)}
  <h3>Your place in the table</h3><div class='tw'><table class='lt hm'><tr>${['Pos','Player Name','P','W','L','B/F','LF','LA','LD (+/-)','PTS','CO','180’s','Avg'].map(x=>`<th>${x}</th>`).join('')}</tr>${rows}</table></div><div class='c'><button class='go s' data-a='mytb'>View full table</button></div>
  <h3>Games still to play</h3>${out.length?out.map(x=>`<div class='nt' style='text-align:left'>Week ${x[0]}${x[4]?' (postponed)':''}</div>`+fxBlock(k,x[0],x)).join(''):`<p class='c'>Nothing outstanding. You are all up to date.</p>`}
@@ -309,6 +309,7 @@ function vHome(){const m=U.me,D=S.D[m&&m.k];
 const c8=s=>s.s180!=null?s.s180:s.highScore==180?1:s.highScore!=null?0:null;
 const grow=r=>{const st=(a,b,c)=>`avg ${a?a.toFixed(2):'-'} · CO ${b||'-'}${c?' · 180s '+c:''}`,fl=r[13];return`<div class='g'><span>${E(r[14])}<small>${fl?'':st(r[8],r[7],r[9])}</small></span><div><b>${r[5]} - ${r[6]}</b>${fl=='b'?'<small>Bye</small>':''}</div><span>${E(r[15])}<small>${fl?'':st(r[11],r[10],r[12])}</small></span></div>`};
 const fnote=(rs,nt)=>{const me=U.me&&U.me.i,t=new Set();rs.forEach(r=>{if(r[13]!='f')return;const ho=r[5]<r[6],fs=ho?r[3]:r[4],fn=ho?r[14]:r[15],wn=ho?r[15]:r[14];if(nt){t.add(wn+' awarded bye');t.add(fn+' forfeits game')}else t.add(me==fs?fn+' forfeits game':wn+' awarded bye')});return [...t].map(x=>`<h4><span>${E(x)}</span></h4>`).join('')};
+const awayNote=(k,w,f)=>{const d=S.D[k],aw=[f[2],f[3]].map(i=>[d.n[i],dayTxt(S.days[k+':'+i]||[],w)]).filter(x=>x[1]).map(x=>x[0]+' ('+x[1]+')');return aw.length?`<div class="nt">🌴 Away: ${E(aw.join(', '))}</div>`:''};
 const fxBlock=(k,w,f)=>{const d=S.D[k],m=f[1],done=[1,2].filter(n=>gr(k,w,m,n)).length,fw=d.n[f[2]]=='Free Week'||d.n[f[3]]=='Free Week';
  if(fw||done==2)return mcard(k,w,f);
  const fl=S.subs.filter(x=>x.st=='flagged'&&x.k==k&&x.w==w&&x.m==m).length,open=U.open[w+'_'+m]||(U.pv&&U.pv.k==k&&U.pv.w==w&&U.pv.m==m);
